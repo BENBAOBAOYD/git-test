@@ -23,6 +23,7 @@ package cn.duhongbiao.day08.byteStream;
 写入数据的原理
 java程序->jvm->os->os调用写数据的方法->把数据写入到文件中*/
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -43,7 +44,8 @@ public class Demo01OutputStream {
     }
 
     private static void show05() throws IOException {
-        FileOutputStream fos = new FileOutputStream("D:\\Java\\file\\a.txt",true);
+        File file = new File("D:\\Java\\file\\test.txt");
+        FileOutputStream fos = new FileOutputStream(file.getPath());
         for (int i = 0; i < 10; i++) {
             byte[] bytes = "Hello World 你好".getBytes();
             fos.write(bytes);//从索引1开始写入两个

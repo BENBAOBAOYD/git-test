@@ -29,6 +29,9 @@ public class TCPClient {
             //5
             outputStream.write(bytes,0,len);
         }
+        //优化上传完文件，要给服务器写一个结束标记 void shutdownOutput()
+        //          禁用此套接字的输出流。
+        socket.shutdownOutput();
         //6
         InputStream inputStream = socket.getInputStream();
         while ((len = inputStream.read(bytes)) != -1) {

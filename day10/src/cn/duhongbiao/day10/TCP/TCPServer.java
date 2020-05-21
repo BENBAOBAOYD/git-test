@@ -5,6 +5,7 @@ import org.w3c.dom.ls.LSOutput;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Random;
 
 /*文件上传案例的服务器端，将客户端上传文件保存到服务器的硬盘，并给客户端回传上传成功
 
@@ -24,29 +25,50 @@ public class TCPServer {
         //1
         ServerSocket serverSocket = new ServerSocket(8888);
         //2
-        Socket socket = serverSocket.accept();
-        //3
-        InputStream inputStream = socket.getInputStream();
-        //4
-        File file = new File("D:\\Java\\file\\ServerData");
-        if (!file.exists()) {
-            file.mkdirs();
+        /*让服务器一直处于监听状态，（死循环）
+        * 有一个客户端上传文件，我们就保存一个*/
+        while (true) {
+            /*使用多线程基础，提高程序的效率，只要有一个客户端上传文件，我就开启一个线程，完成文件的上传*/
+            Socket socket = serverSocket.accept();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //完成文件的上传
+                    try {
+                        //3
+                        InputStream inputStream = socket.getInputStream();
+                        //4
+                        File file = new File("D:\\Java\\file\\ServerData");
+                        if (!file.exists()) {
+                            file.mkdirs();
+                        }
+                        //5
+                        /*优化文件名称被写死，导致每次上传写入的都是同一个文件
+                         * 自定义一个文件的命名规则，防止同名的文件被覆盖
+                         * 规则：域名+毫秒值+随机数*/
+                        String fileName = "//itcast"+System.currentTimeMillis()+new Random(9999).nextInt()+".txt";
+                        FileOutputStream fileOutputStream = new FileOutputStream(file.getPath()+fileName);
+                        //6
+                        int len = 0;
+                        byte[] bytes = new byte[1024];
+                        while ((len = inputStream.read(bytes)) !=-1) {
+                            //7
+                            fileOutputStream.write(bytes,0, len);
+                        }
+                        //8 9
+                        OutputStream outputStream = socket.getOutputStream();
+                        outputStream.write("文件已收到".getBytes());
+                        //10
+                        fileOutputStream.close();
+                        socket.close();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
         }
-        //5
-        FileOutputStream fileOutputStream = new FileOutputStream(file+"\\a.txt");
-        //6
-        int len = 0;
-        byte[] bytes = new byte[1024];
-        while ((len = inputStream.read(bytes)) !=-1) {
-            //7
-            fileOutputStream.write(bytes,0, len);
-        }
-        //8 9
-        OutputStream outputStream = socket.getOutputStream();
-        outputStream.write("文件已收到".getBytes());
-        //10
-        fileOutputStream.close();
-        socket.close();
-        serverSocket.close();
+        //服务器不用关闭
+//        serverSocket.close();
     }
 }
